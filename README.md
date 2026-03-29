@@ -1,6 +1,8 @@
 # Initiative Creator
 
-Cursor skills for creating, reviewing, and submitting JIRA Initiatives — from a problem statement to a live ticket, with Epic breakdown support.
+Skills for creating, reviewing, and submitting JIRA Initiatives — from a problem statement to a live ticket, with Epic breakdown support.
+
+Works with both **Cursor** (`.cursor/`) and **Claude Code** (`.claude/`).
 
 Inspired by [jwforres/rfe-creator](https://github.com/jwforres/rfe-creator), which established the pipeline pattern and multi-step review concept.
 
@@ -19,6 +21,8 @@ Inspired by [jwforres/rfe-creator](https://github.com/jwforres/rfe-creator), whi
 /initiative.speedrun JN-3097    # Fetch, review, revise, and update in one step
 /initiative.breakdown JN-3097   # Generate Epics from an existing initiative
 ```
+
+> Same commands work in both Cursor and Claude Code.
 
 ## Pipeline
 
@@ -110,10 +114,20 @@ priority: Medium
 ## File Structure
 
 ```
-.cursor/
+.claude/                              ← Claude Code skills (flat, one per command)
+├── settings.json
+├── skills/
+│   ├── initiative-template.md        ← shared canonical template
+│   ├── initiative.create/SKILL.md    ← /initiative.create
+│   ├── initiative.review/SKILL.md    ← /initiative.review
+│   ├── initiative.submit/SKILL.md    ← /initiative.submit
+│   ├── initiative.speedrun/SKILL.md  ← /initiative.speedrun
+│   └── initiative.breakdown/SKILL.md ← /initiative.breakdown
+
+.cursor/                              ← Cursor IDE skills + commands
 ├── skills/initiative-creator/
-│   ├── SKILL.md                   ← system entry point
-│   ├── initiative-template.md     ← canonical section template
+│   ├── SKILL.md                      ← system entry point
+│   ├── initiative-template.md
 │   ├── create/SKILL.md
 │   ├── review/SKILL.md
 │   ├── submit/SKILL.md
@@ -126,11 +140,15 @@ priority: Medium
     ├── initiative.speedrun.md
     └── initiative.breakdown.md
 
-artifacts/initiatives/             ← draft outputs
-└── epics/                         ← epic breakdown outputs
+artifacts/initiatives/                ← draft outputs (gitignored)
+└── epics/                            ← epic breakdown outputs
 
 guidelines/
-├── initiative-guidelines.md       ← writing rules and best practices
-├── issue-creation-guidelines.md   ← checklist for all issue types
-└── jira-config.md                 ← your team's JIRA configuration
+├── initiative-guidelines.md          ← writing rules and best practices
+├── issue-creation-guidelines.md      ← checklist for all issue types
+├── jira-config-example.md            ← config template
+└── jira-config.md                    ← your team's config (gitignored)
+
+CLAUDE.md                             ← Claude Code project instructions
+CURSOR.md                             ← Cursor project instructions
 ```
