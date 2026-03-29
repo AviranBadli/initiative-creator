@@ -2,6 +2,8 @@
 
 Run the full initiative pipeline — create → review → submit — with minimal interaction. Designed for when you have a clear problem statement and want a JIRA ticket as fast as possible.
 
+All communication and output must be in English.
+
 ---
 
 ## Input
@@ -12,12 +14,12 @@ Run the full initiative pipeline — create → review → submit — with minim
 
 ## Behavior Philosophy
 
-Speedrun differs from running the individual skills sequentially in one key way: **it makes reasonable defaults on your behalf** and only pauses for things it truly cannot decide alone. The two mandatory pauses are:
+Speedrun makes reasonable defaults on your behalf and only pauses at two mandatory gates:
 
-1. **After draft generation** — Show the draft for quick approval or correction before reviewing
-2. **Before JIRA submission** — Show the full JIRA payload for explicit confirmation
+1. **After draft generation** — Show the **full draft content** for approval or correction before auto-review runs
+2. **Before JIRA submission** — Show the final full draft + JIRA payload for explicit confirmation
 
-Everything else runs automatically.
+Nothing is submitted to JIRA until both approvals are received. Everything else runs automatically.
 
 ---
 
@@ -27,6 +29,7 @@ Read these files silently:
 - `skills/initiative-template.md`
 - `guidelines/initiative-guidelines.md`
 - `guidelines/issue-creation-guidelines.md`
+- `guidelines/jira-config.md` (for JIRA configuration)
 
 Call `mcp_time_get_current_time` with timezone `Asia/Jerusalem`.
 
@@ -52,7 +55,7 @@ Wait for answers, then proceed.
 
 ## Step 3 — Generate Draft
 
-Apply the full `create/SKILL.md` logic to generate the initiative draft. Save the artifact to:
+Apply the full `skills/initiative.create/SKILL.md` logic to generate the initiative draft. Save the artifact to:
 ```
 artifacts/initiatives/initiative-{slug}-{date}.md
 ```
@@ -64,79 +67,147 @@ status: draft
 jira_key: ""
 created: YYYY-MM-DD
 title: ""
-assignee: "712020:f6dc72f9-3c15-4b11-82f2-298a7f78d125"
+assignee: ""
 priority: Medium
+source_rfes: []
+related_initiatives: []
+candidate_epics: []
 ---
 ```
 
 ---
 
-## Step 4 — Mandatory Pause 1: Draft Approval
+## Step 4 — GATE 1: Full Draft Approval
 
-Present the draft to the user in a condensed format:
+**Show the entire initiative draft to the user — every section in full. Do NOT summarize.**
 
 ```
-📝 Draft Generated — Quick Review
+📄 Draft Generated — Full Content Review
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+File:  {file path}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Title:  "{title}"
-File:   {file path}
+# {Title}
 
-Goals:
-{bullet list of goals}
+{full Context section}
 
-Definition of Done:
-{bullet list of DoD criteria}
+## Goals
+
+{full Goals section — every bullet}
+
+## Scope
+
+{full Scope section — every bullet}
+
+### Out of Scope
+
+{full Out of Scope section — every bullet}
+
+## Expected Impact
+
+{full Expected Impact section}
+
+## Phases & Milestones (if present)
+
+{full Phases section}
+
+## Definition of Done
+
+{full DoD section — every criterion}
+
+## Questions & Answers
+
+{full Q&A section}
+
+## Notes
+
+{full Notes section — all related work links}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Looks good? (yes to continue / or describe what to change)
+Does this look right?
+(yes — run auto-review and proceed / or describe what to change)
 ```
 
-If the user says "yes" or equivalent → proceed to Step 5.
-If the user requests changes → apply them to the draft file, then re-present and ask again.
+**Do NOT proceed to auto-review until the user says "yes" or equivalent.**
+
+If the user requests changes:
+- Apply changes to the draft file on disk
+- Re-display the updated full content
+- Ask for approval again
 
 ---
 
 ## Step 5 — Auto-Review
 
-Apply the full `review/SKILL.md` scoring logic automatically. Do not present the full scoring report — just apply all auto-fixes silently.
+Apply the full `skills/initiative.review/SKILL.md` scoring logic automatically. Do not show the full scoring report — just apply all auto-fixes silently.
 
-If auto-review produces fixes, summarize them in one line:
-> "Auto-review applied 3 fixes (title clarity, missing out-of-scope, Q&A date format)."
+If auto-review produces fixes, summarize in one line:
+> "Auto-review applied N fixes (title clarity, missing out-of-scope, Q&A date format)."
 
 Update the file frontmatter to `status: reviewed`.
 
-If any Critical items cannot be auto-fixed after 2 cycles → pause and list them for the user. Wait for their input before continuing.
+If any Critical items cannot be auto-fixed after 2 cycles → pause and list them explicitly. Wait for the user's input before continuing.
 
 ---
 
-## Step 6 — Mandatory Pause 2: Submit Confirmation
+## Step 6 — GATE 2: Final Content + JIRA Submission Approval
 
-Apply the full `submit/SKILL.md` payload preview. Show:
+**Show the final revised content in full, then the JIRA submission details. This is the last chance to review before anything is created in JIRA.**
 
 ```
-📋 Ready to Submit to JIRA
+📄 Final Initiative Content (after auto-review)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Project:    JN (Jounce)
-Type:       Initiative
-Priority:   Medium
-Assignee:   Aviran Badli (abadli@redhat.com)
+# {Title}
 
-Summary:
-  "{title}"
+{full Context section}
+
+## Goals
+{full Goals section}
+
+## Scope
+{full Scope section}
+
+### Out of Scope
+{full Out of Scope section}
+
+## Expected Impact
+{full Expected Impact section}
+
+## Definition of Done
+{full DoD section}
+
+## Questions & Answers
+{full Q&A section}
+
+## Notes
+{full Notes section}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📋 JIRA Submission Details
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Project:   {project_key} ({project_name from jira-config.md})
+Type:      Initiative
+Priority:  {priority}
+Assignee:  {assignee name from jira-config.md}
+Summary:   "{title}"
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Create this initiative in JIRA? (yes / no)
 ```
 
-Wait for explicit "yes" before submitting.
+**Do NOT call any JIRA MCP tool until the user explicitly says "yes".**
+
+If the user says "no": save the draft as-is and tell the user the file path. They can run `/initiative.submit` later.
 
 ---
 
 ## Step 7 — Submit
 
-Call the Atlassian MCP `createJiraIssue` with the initiative payload (same as `submit/SKILL.md` Step 4).
+After both gates are approved, call the Atlassian MCP `createJiraIssue` with the initiative payload (same as `skills/initiative.submit/SKILL.md` Step 5).
+
+Read `guidelines/jira-config.md` for cloud ID, project key, and default assignee.
 
 On success, update the file frontmatter with `status: submitted` and `jira_key: JN-XXXX`.
 
@@ -144,10 +215,10 @@ Output:
 ```
 ✅ Done! Initiative created end-to-end.
 
-JIRA:  JN-XXXX — https://jounce.atlassian.net/browse/JN-XXXX
+JIRA:  JN-XXXX — {jira_base_url}/browse/JN-XXXX
 File:  artifacts/initiatives/initiative-{slug}-{date}.md
 
 Next: Run `/initiative.breakdown JN-XXXX` to generate Epics.
 ```
 
-On failure → show the manual submission guide from `submit/SKILL.md` Step 5.
+On failure → show the manual submission guide from `skills/initiative.submit/SKILL.md` Step 6.
