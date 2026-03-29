@@ -9,17 +9,26 @@ Inspired by [jwforres/rfe-creator](https://github.com/jwforres/rfe-creator), whi
 ## Quick Start
 
 ```
-# Initiative Pipeline
+# Core Pipeline
 /initiative.create      # Write a new initiative from a problem statement
 /initiative.review      # Review, improve, and auto-revise an initiative
 /initiative.submit      # Submit new initiative to JIRA
 /initiative.speedrun    # Full pipeline end-to-end with minimal interaction
 /initiative.breakdown   # Break an approved initiative into Epic drafts
 
-# Work on an existing JIRA Initiative
-/initiative.review JN-3097      # Fetch, review, and auto-revise
-/initiative.speedrun JN-3097    # Fetch, review, revise, and update in one step
-/initiative.breakdown JN-3097   # Generate Epics from an existing initiative
+# Work on existing initiatives
+/initiative.review JN-3097       # Fetch, review, and auto-revise
+/initiative.update JN-3097       # Fetch, edit, and re-submit an existing initiative
+/initiative.status JN-3097       # Live status: epics done/in-progress/blocked
+/initiative.status JN-3097 JN-3112  # Status for multiple initiatives at once
+
+# Quality and planning
+/initiative.feasibility JN-3097  # 3-angle adversarial review (technical, scope, timeline)
+/initiative.split JN-3097        # Split an oversized initiative into right-sized pieces
+
+# Epics
+/initiative.breakdown JN-3097    # Generate all epics from an initiative at once
+/epic.create JN-3097             # Create a single specific epic under an initiative
 ```
 
 > Same commands work in both Cursor and Claude Code.
@@ -52,13 +61,20 @@ Or in one step: `/initiative.speedrun JN-3097`
 
 Generates 3-7 Epic drafts that collectively cover the full initiative scope.
 
-## Pipeline Steps
+## Skill Reference
 
-1. **Create**: Describe your need. The skill asks clarifying questions and produces a complete initiative draft with all required sections (Context, Goals, Scope, Expected Impact, Phases, DoD, Q&A).
-2. **Review**: Scores the initiative against a 100-point quality checklist and auto-revises issues. Accepts a JIRA key to review existing initiatives.
-3. **Submit**: Creates new JIRA Initiative tickets via the Atlassian MCP. Shows full payload for approval before creating anything.
-4. **Speedrun**: Runs create → review → submit with only 2 mandatory pauses (draft approval + submit confirmation).
-5. **Breakdown**: Analyzes an approved initiative and generates structured Epic drafts covering 100% of the initiative scope.
+| Skill | Command | Description |
+|---|---|---|
+| Create | `/initiative.create` | Clarifying questions + RFE/initiative discovery → full structured draft |
+| Review | `/initiative.review` | 100-point checklist score + up to 2 auto-revise cycles |
+| Submit | `/initiative.submit` | JIRA MCP submission with full payload approval gate |
+| Speedrun | `/initiative.speedrun` | create → review → submit with only 2 user pauses |
+| Breakdown | `/initiative.breakdown` | Generate all Epics from an initiative (full scope coverage) |
+| Update | `/initiative.update` | Fetch existing initiative, apply edits, re-submit to same ticket |
+| Status | `/initiative.status` | Live JIRA snapshot: epics done/blocked + velocity estimate |
+| Feasibility | `/initiative.feasibility` | 3-angle adversarial review: technical, scope, timeline |
+| Split | `/initiative.split` | Split an oversized initiative into right-sized pieces |
+| Epic Create | `/epic.create` | Create a single Epic under an initiative with overlap detection |
 
 ## Editing Between Steps
 
