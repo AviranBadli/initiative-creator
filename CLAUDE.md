@@ -2,23 +2,17 @@
 
 This repo contains skills for creating, reviewing, and submitting JIRA Initiatives.
 
-## Available Skills (Claude Code)
+Skill logic lives in the **shared `skills/` directory**. The `.claude/skills/*/SKILL.md` files are thin wrappers with Claude Code frontmatter that load from `skills/`.
 
-| Skill | Command | Description |
+## Available Skills
+
+| Command | Wrapper | Shared Skill |
 |---|---|---|
-| `initiative.create` | `/initiative.create` | Generate initiative from problem statement |
-| `initiative.review` | `/initiative.review [file or JN-key]` | Score + auto-revise draft |
-| `initiative.submit` | `/initiative.submit [file]` | Submit to JIRA via MCP |
-| `initiative.speedrun` | `/initiative.speedrun` | Full pipeline, minimal interaction |
-| `initiative.breakdown` | `/initiative.breakdown [JN-key or file]` | Generate Epic drafts |
-
-## Artifact Conventions
-
-All outputs land in `artifacts/initiatives/`:
-- `initiative-{slug}-{date}.md` — initiative drafts
-- `epics/epic-{initiative}-{n}-{slug}.md` — epic breakdowns
-
-Frontmatter status lifecycle: `draft` → `reviewed` → `submitted`
+| `/initiative.create` | `.claude/skills/initiative.create/SKILL.md` | `skills/initiative.create/SKILL.md` |
+| `/initiative.review` | `.claude/skills/initiative.review/SKILL.md` | `skills/initiative.review/SKILL.md` |
+| `/initiative.submit` | `.claude/skills/initiative.submit/SKILL.md` | `skills/initiative.submit/SKILL.md` |
+| `/initiative.speedrun` | `.claude/skills/initiative.speedrun/SKILL.md` | `skills/initiative.speedrun/SKILL.md` |
+| `/initiative.breakdown` | `.claude/skills/initiative.breakdown/SKILL.md` | `skills/initiative.breakdown/SKILL.md` |
 
 ## Configuration
 
@@ -30,19 +24,6 @@ cp guidelines/jira-config-example.md guidelines/jira-config.md
 
 `guidelines/jira-config.md` is gitignored — your account IDs stay local.
 
-## Skills Reference
+## To Edit a Skill
 
-```
-.claude/skills/
-├── initiative-template.md          ← canonical section template
-├── initiative.create/SKILL.md      ← /initiative.create
-├── initiative.review/SKILL.md      ← /initiative.review
-├── initiative.submit/SKILL.md      ← /initiative.submit
-├── initiative.speedrun/SKILL.md    ← /initiative.speedrun
-└── initiative.breakdown/SKILL.md   ← /initiative.breakdown
-```
-
-## Writing Guidelines
-
-- `guidelines/initiative-guidelines.md` — full template, DoD rules, best practices
-- `guidelines/issue-creation-guidelines.md` — Initiative/Epic/Story quality checklist
+Edit the file in `skills/` — both Cursor and Claude Code will automatically get the update. Never edit the wrapper files in `.claude/skills/` for logic changes.

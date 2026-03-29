@@ -24,7 +24,7 @@ Everything else runs automatically.
 ## Step 1 — Load Context
 
 Read these files silently:
-- `.cursor/skills/initiative-creator/initiative-template.md`
+- `skills/initiative-template.md`
 - `guidelines/initiative-guidelines.md`
 - `guidelines/issue-creation-guidelines.md`
 

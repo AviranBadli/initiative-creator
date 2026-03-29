@@ -8,7 +8,7 @@ Generate a complete, structured JIRA Initiative draft from a problem statement. 
 
 Before asking any questions, read these files silently to internalize all rules and templates:
 
-1. `.cursor/skills/initiative-creator/initiative-template.md` — canonical section structure
+1. `skills/initiative-template.md` — canonical section structure
 2. `guidelines/initiative-guidelines.md` — writing rules, DoD requirements, best practices
 3. `guidelines/issue-creation-guidelines.md` — checklist and quality bar
 

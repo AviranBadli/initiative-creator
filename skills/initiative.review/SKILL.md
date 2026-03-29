@@ -25,7 +25,7 @@ Score an initiative draft against the quality checklist and auto-revise detected
 **If no argument:** Find the most recently modified `.md` file in `artifacts/initiatives/` that has `status: draft` in its frontmatter.
 
 Also read these files silently to load the quality standards:
-- `.cursor/skills/initiative-creator/initiative-template.md`
+- `skills/initiative-template.md`
 - `guidelines/initiative-guidelines.md`
 - `guidelines/issue-creation-guidelines.md`
 

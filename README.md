@@ -114,27 +114,28 @@ priority: Medium
 ## File Structure
 
 ```
-.claude/                              ← Claude Code skills (flat, one per command)
-├── settings.json
-├── skills/
-│   ├── initiative-template.md        ← shared canonical template
-│   ├── initiative.create/SKILL.md    ← /initiative.create
-│   ├── initiative.review/SKILL.md    ← /initiative.review
-│   ├── initiative.submit/SKILL.md    ← /initiative.submit
-│   ├── initiative.speedrun/SKILL.md  ← /initiative.speedrun
-│   └── initiative.breakdown/SKILL.md ← /initiative.breakdown
+skills/                               ← SHARED source of truth (edit here, not in wrappers)
+├── initiative-template.md            ← canonical section template
+├── initiative.create/SKILL.md        ← actual create logic
+├── initiative.review/SKILL.md        ← actual review logic
+├── initiative.submit/SKILL.md        ← actual submit logic
+├── initiative.speedrun/SKILL.md      ← actual speedrun logic
+└── initiative.breakdown/SKILL.md     ← actual breakdown logic
 
-.cursor/                              ← Cursor IDE skills + commands
+.claude/                              ← Claude Code thin wrappers
+├── settings.json
+└── skills/
+    ├── initiative.create/SKILL.md    ← frontmatter + "load skills/initiative.create/SKILL.md"
+    ├── initiative.review/SKILL.md
+    ├── initiative.submit/SKILL.md
+    ├── initiative.speedrun/SKILL.md
+    └── initiative.breakdown/SKILL.md
+
+.cursor/                              ← Cursor thin wrappers
 ├── skills/initiative-creator/
-│   ├── SKILL.md                      ← system entry point
-│   ├── initiative-template.md
-│   ├── create/SKILL.md
-│   ├── review/SKILL.md
-│   ├── submit/SKILL.md
-│   ├── speedrun/SKILL.md
-│   └── breakdown/SKILL.md
+│   └── SKILL.md                      ← system overview, points to skills/
 └── commands/
-    ├── initiative.create.md
+    ├── initiative.create.md           ← "load skills/initiative.create/SKILL.md"
     ├── initiative.review.md
     ├── initiative.submit.md
     ├── initiative.speedrun.md
@@ -152,3 +153,5 @@ guidelines/
 CLAUDE.md                             ← Claude Code project instructions
 CURSOR.md                             ← Cursor project instructions
 ```
+
+> **To update a skill:** edit the file in `skills/` only. Both Cursor and Claude Code pick it up automatically — never edit the wrappers.
