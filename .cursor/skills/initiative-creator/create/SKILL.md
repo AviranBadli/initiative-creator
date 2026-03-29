@@ -1,6 +1,6 @@
 # Initiative Create Skill
 
-Generate a complete, structured JIRA Initiative draft from a problem statement. Ask clarifying questions first, then produce a fully-formed artifact file.
+Generate a complete, structured JIRA Initiative draft from a problem statement. Discover existing related work first, ask deep clarifying questions, then produce a fully-formed artifact file.
 
 ---
 
@@ -22,24 +22,121 @@ Call `mcp_time_get_current_time` with timezone `Asia/Jerusalem` immediately. Sto
 
 ---
 
-## Step 3 — Clarifying Questions
+## Step 3 — Current State Discovery (JIRA + Existing Work)
 
-If the user provided only a vague problem statement or a short description, ask ALL of the following questions in a single message (numbered list, do not ask one at a time):
+**This step runs automatically before asking the user anything.** Search for existing work that is related to the initiative topic.
 
-1. **Problem:** What specific problem or pain point does this initiative solve? Who is currently affected and how?
-2. **Goals:** What are the 3-6 key outcomes that define success? Try to make them measurable.
-3. **Scope:** What is explicitly IN scope? What are you intentionally leaving OUT for later?
-4. **Definition of Done:** How will you know this initiative is 100% complete? What can you verify?
-5. **Timeline / Phases:** Is this single-phase or multi-phase? Roughly how many sprints do you expect?
-6. **Dependencies:** Are there other teams, external systems, or pending decisions this depends on?
+### 3a — Search JIRA for Related Initiatives
 
-If the user already provided detailed context that answers most of these, skip the questions you can already answer and only ask about genuine gaps. If everything is clear, skip Step 3 entirely and proceed to Step 4.
+Use the Atlassian MCP to search for existing initiatives. Read `guidelines/jira-config.md` first to get the project key and cloud ID, then run these JQL queries in parallel:
+
+```
+# Find existing initiatives in the project
+issuetype = Initiative AND project = {PROJECT_KEY} ORDER BY created DESC
+
+# Find initiatives mentioning the topic keywords
+issuetype = Initiative AND project = {PROJECT_KEY} AND text ~ "{keyword_from_topic}" ORDER BY updated DESC
+```
+
+Extract all results: key, summary, status, assignee.
+
+### 3b — Search JIRA for Related Epics
+
+```
+# Find open epics that might belong under this initiative
+issuetype = Epic AND project = {PROJECT_KEY} AND text ~ "{keyword_from_topic}" ORDER BY updated DESC
+
+# Find epics with no parent initiative
+issuetype = Epic AND project = {PROJECT_KEY} AND "Epic Link" is EMPTY AND text ~ "{keyword_from_topic}"
+```
+
+### 3c — Check Local Artifacts
+
+Scan `artifacts/initiatives/` for any existing draft or submitted initiative files that match the topic. Read their titles and status from frontmatter.
+
+### 3d — Present Discovery Results to User
+
+After the searches, present a concise summary:
+
+```
+🔍 Current State Discovery
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Existing Initiatives found ({N} total):
+  • {JN-XXX} "{Title}" — Status: {status}
+  • {JN-XXX} "{Title}" — Status: {status}
+  [or: No related initiatives found]
+
+Potentially Related Epics ({N} found):
+  • {JN-XXX} "{Title}" — Status: {status}, Parent: {initiative or none}
+  • {JN-XXX} "{Title}" — Status: {status}, Parent: {initiative or none}
+  [or: No related epics found]
+
+Local Draft Artifacts:
+  • {file path} — status: {draft/reviewed/submitted}
+  [or: No local drafts found]
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+If JIRA search is unavailable (MCP not configured), skip 3a and 3b, note it, and continue.
 
 ---
 
-## Step 4 — Draft the Initiative
+## Step 4 — Current State Questions
 
-Using the answers from Step 3 (and the user's original description), produce a complete initiative draft.
+Ask ALL of the following questions in a single message. These questions are specifically designed to surface existing work, adjacent initiatives, and gaps before drafting. Do NOT split into multiple rounds.
+
+**Present them exactly like this:**
+
+---
+
+Before I draft the initiative, I need to understand the current state deeply. Please answer as many of these as you can:
+
+**About what already exists:**
+1. What is the current state of this area today? What already works, what is broken, what is missing?
+2. Are there any existing JIRA initiatives or epics (beyond what I found above) that overlap with this topic?
+3. Is there existing work already in progress that this initiative would build on, replace, or be blocked by?
+4. Have we tried to solve this before? If yes, what happened and what did we learn?
+
+**About related work that should be included:**
+5. Are there epics or stories that are currently "floating" (no parent initiative) that should live under this initiative?
+6. Are there adjacent problem areas that are closely related — that we might want to include in scope or at minimum reference as "related"?
+7. Is there work happening on other teams or in other initiatives that this depends on or affects?
+
+**About the initiative boundaries:**
+8. What parts of this problem space are explicitly owned by another initiative already? (helps define out-of-scope)
+9. Are there architectural decisions, design docs, or tech specs already made that this initiative must respect?
+10. What would a "Phase 2" of this initiative look like? (helps define what goes in Phase 1 vs. what is future work)
+
+---
+
+After the user responds, synthesize all answers into a **Related Work Summary** (internal, not shown to user) covering:
+- Which existing JN tickets should be listed as related in the Notes section
+- Which epics are candidates to be children of this initiative
+- What "out of scope" items are clearly defined by adjacent initiatives
+- What prior decisions or constraints to mention in Context
+
+---
+
+## Step 5 — Clarifying Questions (Initiative Shape)
+
+Now ask the questions needed to define the initiative itself. **Combine with any unanswered items from Step 4 into a single message** — never ask two rounds of questions separately.
+
+1. **Problem:** What specific problem or pain point does this initiative solve? Who is currently affected and how?
+2. **Goals:** What are the 3-6 key outcomes that define success? Try to make them measurable.
+3. **Scope:** What is explicitly IN scope for this initiative? What are you intentionally leaving OUT for later?
+4. **Definition of Done:** How will you know this initiative is 100% complete? What can you verify?
+5. **Timeline / Phases:** Is this single-phase or multi-phase? Roughly how many sprints do you expect?
+6. **Team:** Who are the key people involved? Any external teams or stakeholders to name?
+
+Skip any question the user already answered in Step 4 or in their original description.
+
+---
+
+## Step 6 — Draft the Initiative
+
+Using answers from Steps 4 and 5 plus the discovery results from Step 3, produce a complete initiative draft.
 
 ### Section Requirements
 
@@ -52,10 +149,10 @@ Follow the structure from `initiative-template.md` exactly. Every section below 
 - Must NOT be vague (no "Improve X" or "Work on Y")
 
 #### Context (2-4 paragraphs)
-- Current state and pain points
-- Why this matters now (urgency, strategic alignment)
-- Who is affected
-- Business or technical drivers
+- **Current state paragraph** — describe the situation TODAY based on what the user told you in Step 4 questions 1-4. Be specific: what exists, what is broken, what has been tried.
+- **Why this matters now** — urgency, strategic alignment, what unblocks
+- **Who is affected** — teams, users, customers
+- **Business or technical drivers**
 
 #### Goals (3-6 bullets)
 - Specific and measurable
@@ -64,7 +161,7 @@ Follow the structure from `initiative-template.md` exactly. Every section below 
 
 #### Scope
 - Bullet list of what is included
-- Sub-section "Out of Scope" with what is explicitly excluded
+- Sub-section "Out of Scope" — use the boundary information from Step 4 questions 8-9 to make this precise and concrete
 
 #### Expected Impact
 - Quantifiable where possible
@@ -72,8 +169,8 @@ Follow the structure from `initiative-template.md` exactly. Every section below 
 
 #### Phases & Milestones _(only if multi-phase)_
 - Include only if the initiative spans multiple distinct phases
+- Phase 1 = current scope; Phase 2 = the future work identified in Step 4 question 10
 - Each phase gets a name, 2-3 sentence description, and deliverables list
-- Remove this section entirely for single-phase work
 
 #### Definition of Done
 - Verifiable, specific criteria — not "improve" but "reduce by X%" or "all Y are complete"
@@ -81,10 +178,10 @@ Follow the structure from `initiative-template.md` exactly. Every section below 
 - A reader should be able to check each item off with a yes/no
 
 #### Questions & Answers
-- Always include this section even if empty
-- Add any genuinely open questions from the conversation (owner = Aviran Badli by default)
+- Always include this section
+- Populate Open Questions with any genuinely unresolved items surfaced during Steps 3-5
 - Use today's date (from Step 2) on all "Asked" timestamps
-- Structure:
+- If Step 4 question 7 revealed cross-team dependencies → add as Open Questions with owners
 
 ```
 ### Open Questions
@@ -95,16 +192,34 @@ Follow the structure from `initiative-template.md` exactly. Every section below 
    - **Asked:** YYYY-MM-DD
 
 ### Answered Questions
-(None yet)
+(Questions answered during discovery → move here with their answers)
 ```
 
-#### Notes
-- Include links to related Google Docs, JIRA tickets, Slack threads if mentioned
-- Note any relevant cross-team dependencies
+#### Notes & Related Work
+- Link to every related JIRA ticket found in Step 3 or mentioned in Step 4
+- Explicitly list epics that are candidates to be children of this initiative
+- Reference any architecture docs, design docs, or prior explorations mentioned
+- Format:
+
+```
+## Notes
+
+**Related Initiatives:**
+* [{JN-XXX}](https://YOUR_ORG.atlassian.net/browse/JN-XXX) "{Title}" — [relationship: depends on / supersedes / adjacent to]
+
+**Candidate Child Epics (no parent yet):**
+* [{JN-XXX}](https://YOUR_ORG.atlassian.net/browse/JN-XXX) "{Epic Title}" — should be linked under this initiative
+
+**Prior Work / Context:**
+* [Description of prior attempt, design doc, or constraint]
+
+**Architecture Constraints:**
+* [Relevant decisions already made that this initiative must respect]
+```
 
 ---
 
-## Step 5 — Save the Artifact
+## Step 7 — Save the Artifact
 
 Save the complete draft to:
 ```
@@ -122,20 +237,31 @@ status: draft
 jira_key: ""
 created: YYYY-MM-DD
 title: "[full initiative title here]"
-assignee: "712020:f6dc72f9-3c15-4b11-82f2-298a7f78d125"
+assignee: ""
 priority: Medium
+related_initiatives: []   # list of JN keys found in discovery
+candidate_epics: []       # list of JN keys that should be children
 ---
 ```
 
 ---
 
-## Step 6 — Output to User
+## Step 8 — Output to User
 
 After saving, tell the user:
 
 1. The artifact file path
-2. A brief summary of what was generated (title + 2-sentence description of what the initiative covers)
-3. Suggest the next step: "Run `/initiative.review` to score and auto-improve this draft, or edit the file directly before reviewing."
+2. A brief summary: title + 2-sentence description of what the initiative covers
+3. A **Related Work Summary** showing what was found and linked:
+   ```
+   🔗 Related Work Linked
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   Related initiatives referenced: {N}
+   Candidate child epics identified: {N}
+   Open questions captured: {N}
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   ```
+4. Suggest next step: "Run `/initiative.review` to score and auto-improve this draft, or edit the file directly before reviewing."
 
 ---
 
@@ -145,13 +271,15 @@ Before writing the file, verify every item:
 
 - [ ] Title starts with an action verb
 - [ ] Title is 60-80 characters and specific enough to understand without reading the description
-- [ ] Context section has at least 2 full paragraphs explaining WHY
+- [ ] Context section describes the CURRENT STATE specifically (not just abstract problem)
 - [ ] Goals are measurable (not vague like "improve" or "enhance")
-- [ ] Scope has both in-scope AND out-of-scope items
+- [ ] Scope has both in-scope AND out-of-scope items (out-of-scope informed by adjacent initiatives)
 - [ ] DoD has at least 3 verifiable criteria
-- [ ] Q&A section is present with correct date format
+- [ ] Q&A section is present with open questions populated from discovery
+- [ ] Notes section references all related JIRA tickets found
+- [ ] Candidate child epics are listed
 - [ ] All timestamps use the date from `mcp_time_get_current_time`
-- [ ] File is saved to the correct path
+- [ ] File is saved to the correct path with updated frontmatter
 
 If any item is missing → fix it before saving.
 
