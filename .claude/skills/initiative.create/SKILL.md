@@ -1,6 +1,6 @@
 ---
 name: initiative.create
-description: "Generate a complete JIRA Initiative draft from a problem statement with current-state discovery, RFE linkage, and related epic surfacing"
+description: "Generate a complete JIRA Initiative draft from a problem statement with current-state discovery, RFE linkage, related epic surfacing, and optional before/after pipeline architecture diagram"
 user-invocable: true
 allowed-tools:
   - mcp__atlassian__jira_search_issues

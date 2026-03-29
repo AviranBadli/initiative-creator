@@ -296,13 +296,56 @@ candidate_epics: []       # list of JN keys that should be children
 
 ---
 
-## Step 8 — Output to User
+## Step 8 — Pipeline Architecture Question
 
-After saving, tell the user:
+After saving the draft, ask the user:
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📐 Pipeline Architecture Diagram
+
+This initiative touches existing systems and data flows.
+Would you like me to add a "Pipeline Context" section to the initiative
+showing:
+  • The current pipeline state (what exists today, what is missing)
+  • The target pipeline state (what this initiative adds/changes)
+  • Where each deliverable fits in the data flow
+
+This helps reviewers and engineers understand the initiative's
+impact without needing separate architecture context.
+
+(yes — add it / no — skip)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+**If the user says yes:**
+
+1. Ask: "Briefly describe the existing pipeline steps relevant to this initiative, or point me to the architecture docs I should read." If they point to docs, read them before drawing.
+2. Produce a **before/after ASCII or Mermaid diagram** showing:
+   - **Current state:** The existing pipeline with gaps/missing pieces clearly marked (use ❌ for missing, ⚠️ for exists-but-broken, ✅ for working)
+   - **Target state:** The same pipeline after the initiative, with new components added (use ✅ for new additions)
+3. Insert it into the initiative file as a new `## Pipeline Context` section immediately after the `## Context` section (before `## Goals`)
+4. Update the file on disk
+
+**Format guidance:**
+- Keep diagrams readable in plain text (ASCII boxes with arrows are fine)
+- Show VPN boundaries if relevant (box around inside-VPN components)
+- Label each step with the component name, not just the database name
+- Mark missing pieces with ❌ and brief "not in schema" / "not stored" notes
+- New additions in the target state should be labeled "(NEW)" or "(EXTENDED)"
+
+**If the user says no:** Skip and proceed to Step 9.
+
+---
+
+## Step 9 — Output to User
+
+After completing Step 8, tell the user:
 
 1. The artifact file path
 2. A brief summary: title + 2-sentence description of what the initiative covers
-3. A **Related Work Summary** showing what was found and linked:
+3. Whether a Pipeline Context section was added
+4. A **Related Work Summary** showing what was found and linked:
    ```
    🔗 Related Work Linked
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -313,7 +356,7 @@ After saving, tell the user:
    Open questions captured:         {N}
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    ```
-4. Suggest next step: "Run `/initiative.review` to score and auto-improve this draft, or edit the file directly before reviewing."
+5. Suggest next step: "Run `/initiative.review` to score and auto-improve this draft, or edit the file directly before reviewing."
 
 ---
 
