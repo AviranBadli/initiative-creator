@@ -50,13 +50,29 @@ issuetype = Epic AND project = {PROJECT_KEY} AND text ~ "{keyword_from_topic}" O
 issuetype = Epic AND project = {PROJECT_KEY} AND "Epic Link" is EMPTY AND text ~ "{keyword_from_topic}"
 ```
 
-### 3c — Check Local Artifacts
+### 3c — Search for Related RFEs
+
+RFEs (Requests for Enhancement) in the `RHAIRFE` JIRA project are often the origin of initiatives — a group of related RFEs gets bundled into one initiative. Search for them in parallel with the other queries:
+
+```
+# RFEs mentioning the topic keywords (RHAIRFE project)
+issuetype in (RFE, "Feature Request") AND project = RHAIRFE AND text ~ "{keyword_from_topic}" ORDER BY updated DESC
+
+# RFEs that are already approved / accepted
+issuetype in (RFE, "Feature Request") AND project = RHAIRFE AND text ~ "{keyword_from_topic}" AND status in (Accepted, Approved, "In Progress") ORDER BY updated DESC
+```
+
+Extract for each RFE: key, summary, status, priority, assignee, and the first 200 characters of the description.
+
+If the RHAIRFE project key is not available in `guidelines/jira-config.md`, try `RHAIRFE` as the default. If this project does not exist in the connected JIRA instance, skip 3c and note it.
+
+### 3d — Check Local Artifacts
 
 Scan `artifacts/initiatives/` for any existing draft or submitted initiative files that match the topic. Read their titles and status from frontmatter.
 
-### 3d — Present Discovery Results to User
+### 3e — Present Discovery Results to User
 
-After the searches, present a concise summary:
+After all searches complete, present a concise summary — **this is the first thing the user sees**:
 
 ```
 🔍 Current State Discovery
@@ -69,8 +85,14 @@ Existing Initiatives found ({N} total):
 
 Potentially Related Epics ({N} found):
   • {JN-XXX} "{Title}" — Status: {status}, Parent: {initiative or none}
-  • {JN-XXX} "{Title}" — Status: {status}, Parent: {initiative or none}
   [or: No related epics found]
+
+Related RFEs found ({N} total):
+  • {RHAIRFE-XXX} "{Title}" — Status: {status}, Priority: {priority}
+    "{first 100 chars of description}..."
+  • {RHAIRFE-XXX} "{Title}" — Status: {status}, Priority: {priority}
+    "{first 100 chars of description}..."
+  [or: No related RFEs found]
 
 Local Draft Artifacts:
   • {file path} — status: {draft/reviewed/submitted}
@@ -79,7 +101,7 @@ Local Draft Artifacts:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-If JIRA search is unavailable (MCP not configured), skip 3a and 3b, note it, and continue.
+If JIRA search is unavailable (MCP not configured), skip 3a, 3b, and 3c, note it, and continue.
 
 ---
 
@@ -104,17 +126,30 @@ Before I draft the initiative, I need to understand the current state deeply. Pl
 6. Are there adjacent problem areas that are closely related — that we might want to include in scope or at minimum reference as "related"?
 7. Is there work happening on other teams or in other initiatives that this depends on or affects?
 
+**About RFEs this initiative is based on:**
+8. Is this initiative based on one or more RFEs? If yes, which ones (RHAIRFE-XXX numbers)?
+   _(From the RFEs I found above — are any of them the source for this initiative? Or are there other RFEs I didn't surface?)_
+9. If based on RFEs: should this initiative implement ALL of those RFEs, or only a subset? Which ones are out of scope for now?
+
 **About the initiative boundaries:**
-8. What parts of this problem space are explicitly owned by another initiative already? (helps define out-of-scope)
-9. Are there architectural decisions, design docs, or tech specs already made that this initiative must respect?
-10. What would a "Phase 2" of this initiative look like? (helps define what goes in Phase 1 vs. what is future work)
+10. What parts of this problem space are explicitly owned by another initiative already? (helps define out-of-scope)
+11. Are there architectural decisions, design docs, or tech specs already made that this initiative must respect?
+12. What would a "Phase 2" of this initiative look like? (helps define what goes in Phase 1 vs. what is future work)
 
 ---
 
-After the user responds, synthesize all answers into a **Related Work Summary** (internal, not shown to user) covering:
+After the user responds:
+
+**If RFEs are confirmed (questions 8-9):**
+1. Fetch the full content of each confirmed RFE using the Atlassian MCP (`get_issue` with `expand: "description,comments"`)
+2. Read their descriptions carefully — extract: problem statement, customer impact, requested behavior, acceptance criteria
+3. Store this as **RFE Content Summary** (internal) — you will use it to populate the initiative's Context, Goals, and Expected Impact sections
+
+**In all cases**, synthesize answers into a **Related Work Summary** (internal, not shown to user) covering:
+- Which RHAIRFE keys are the source RFEs for this initiative (if any)
 - Which existing JN tickets should be listed as related in the Notes section
 - Which epics are candidates to be children of this initiative
-- What "out of scope" items are clearly defined by adjacent initiatives
+- What "out of scope" items are clearly defined by adjacent initiatives or excluded RFEs
 - What prior decisions or constraints to mention in Context
 
 ---
@@ -150,14 +185,18 @@ Follow the structure from `initiative-template.md` exactly. Every section below 
 
 #### Context (2-4 paragraphs)
 - **Current state paragraph** — describe the situation TODAY based on what the user told you in Step 4 questions 1-4. Be specific: what exists, what is broken, what has been tried.
+- **RFE origin paragraph** _(only if source RFEs exist)_ — briefly state that this initiative was created to address one or more customer/field RFEs. Summarize the core customer need expressed in those RFEs in 1-2 sentences. Do NOT copy-paste RFE text verbatim — synthesize the customer intent.
 - **Why this matters now** — urgency, strategic alignment, what unblocks
 - **Who is affected** — teams, users, customers
 - **Business or technical drivers**
+
+**If source RFEs were fetched:** Use the problem statements and customer impact sections from the RFE Content Summary to make the Context more specific and grounded. The initiative context should feel like a natural continuation of the RFE problem space.
 
 #### Goals (3-6 bullets)
 - Specific and measurable
 - Outcome-focused, not activity-focused
 - Bold key terms for scannability
+- **If source RFEs exist:** at least one goal should directly address the RFE acceptance criteria or requested behavior. Phrase it as an initiative goal, not an RFE description.
 
 #### Scope
 - Bullet list of what is included
@@ -204,6 +243,15 @@ Follow the structure from `initiative-template.md` exactly. Every section below 
 ```
 ## Notes
 
+**Source RFEs** _(the RFEs this initiative implements)_:
+* [RHAIRFE-XXX](https://issues.redhat.com/browse/RHAIRFE-XXX) "{RFE Title}" — Status: {status} | "{1-sentence summary of what the RFE requests}"
+* [RHAIRFE-XXX](https://issues.redhat.com/browse/RHAIRFE-XXX) "{RFE Title}" — Status: {status} | "{1-sentence summary}"
+[If no source RFEs: omit this section entirely]
+
+**Related RFEs** _(related but not fully in scope for this initiative)_:
+* [RHAIRFE-XXX](https://issues.redhat.com/browse/RHAIRFE-XXX) "{RFE Title}" — adjacent, tracked for Phase 2
+[If none: omit this section]
+
 **Related Initiatives:**
 * [{JN-XXX}](https://YOUR_ORG.atlassian.net/browse/JN-XXX) "{Title}" — [relationship: depends on / supersedes / adjacent to]
 
@@ -239,6 +287,8 @@ created: YYYY-MM-DD
 title: "[full initiative title here]"
 assignee: ""
 priority: Medium
+source_rfes: []           # list of RHAIRFE keys this initiative implements
+related_rfes: []          # list of RHAIRFE keys that are related but out of scope
 related_initiatives: []   # list of JN keys found in discovery
 candidate_epics: []       # list of JN keys that should be children
 ---
@@ -256,9 +306,11 @@ After saving, tell the user:
    ```
    🔗 Related Work Linked
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   Related initiatives referenced: {N}
-   Candidate child epics identified: {N}
-   Open questions captured: {N}
+   Source RFEs (implements):        {N} — {RHAIRFE-XXX, ...}
+   Related RFEs (out of scope):     {N}
+   Related initiatives referenced:  {N}
+   Candidate child epics:           {N}
+   Open questions captured:         {N}
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    ```
 4. Suggest next step: "Run `/initiative.review` to score and auto-improve this draft, or edit the file directly before reviewing."
@@ -276,8 +328,12 @@ Before writing the file, verify every item:
 - [ ] Scope has both in-scope AND out-of-scope items (out-of-scope informed by adjacent initiatives)
 - [ ] DoD has at least 3 verifiable criteria
 - [ ] Q&A section is present with open questions populated from discovery
+- [ ] If source RFEs exist: Context has an RFE origin paragraph referencing customer need
+- [ ] If source RFEs exist: at least one Goal traces back to RFE acceptance criteria
+- [ ] Notes section has a "Source RFEs" block with links (or is absent if no RFEs confirmed)
 - [ ] Notes section references all related JIRA tickets found
 - [ ] Candidate child epics are listed
+- [ ] Frontmatter `source_rfes` array is populated (or empty if none confirmed)
 - [ ] All timestamps use the date from `mcp_time_get_current_time`
 - [ ] File is saved to the correct path with updated frontmatter
 
