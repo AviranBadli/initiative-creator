@@ -1,0 +1,15 @@
+# Personal JIRA config (contains team-specific IDs)
+guidelines/jira-config.md
+
+# macOS
+.DS_Store
+
+# Editor
+.vscode/
+*.swp
+*.swo
+
+# Keep the artifacts directory structure but not actual drafts
+# (comment these out if you want to track your initiative artifacts in git)
+artifacts/initiatives/*.md
+artifacts/initiatives/epics/*.md
